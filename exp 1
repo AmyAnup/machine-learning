@@ -1,1 +1,84 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error , r2_score
+housing = fetch_california_housing()
+
+data = pd.DataFrame(housing.data, columns=housing.feature_names)
+data[&quot;price&quot;] = housing.target
+x=data[[&quot;AveRooms&quot;]].values
+y=data[&quot;price&quot;].values
+X_train,X_test,y_train,y_test = train_test_split(x,y,test_size=0.2,random_state=42)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.fit_transform(X_test)
+w=0
+b=0
+
+learning_rate = 0.01
+epochs = 1000
+
+n=len(X_train_scaled)
+
+for i in range(epochs):
+y_pred = w*X_train_scaled.flatten() + b
+
+dw = (1/n)*np.sum((y_pred-y_train)*X_train_scaled.flatten())
+db = (1/n)*np.sum(y_pred-y_train)
+w = w - learning_rate * dw
+b = b - learning_rate * db
+
+if i % 100 == 0:
+cost=(1/(2*n))*np.sum((y_pred-y_train)**2)
+print(f&quot;Epoch {i},Cost ={cost:.4f}&quot;)
+
+y_pred_gd = w*X_test_scaled.flatten() + b
+
+print(&quot;Gradient Descent&quot;)
+print(&quot;________________&quot;)
+print(&quot;Weights:&quot;,w)
+print(&quot;Bias:&quot;,b)
+print(&quot;MSE:&quot;,mean_squared_error(y_test,y_pred_gd))
+print(&quot;R2 Score:&quot;,r2_score(y_test,y_pred_gd))
+
+X_train_ne = np.c_[np.ones((len(X_train),1)),X_train]
+X_test_ne = np.c_[np.ones((len(X_test),1)),X_test]
+theta=np.linalg.inv(X_train_ne. T @ X_train_ne)@X_train_ne.T@y_train
+
+y_pred_ne = X_test_ne @ theta
+print(&quot;\nNormal Equation&quot;)
+print(&quot;-----------------&quot;)
+print(&quot;Intercept:&quot;,theta[0])
+print(&quot;Slope:&quot;,theta[1])
+print(&quot;MSE:&quot;,mean_squared_error(y_test,y_pred_ne))
+print(&quot;R2 Score:&quot;,r2_score(y_test,y_pred_ne))
+
+plt.figure(figsize=(8,6))
+
+# Scatter plot of training data
+plt.scatter(X_train, y_train, color=&#39;blue&#39;, alpha=0.5, label=&#39;Training Data&#39;)
+
+# Sort X values for smooth lines
+X_sorted = np.sort(X_train.flatten())
+
+# Gradient Descent line
+X_sorted_scaled = scaler.transform(X_sorted.reshape(-1,1)).flatten()
+y_line_gd = w * X_sorted_scaled + b
+plt.plot(X_sorted, y_line_gd, color=&#39;red&#39;, linewidth=2,
+label=&#39;Gradient Descent&#39;)
+
+# Normal Equation line
+y_line_ne = theta[0] + theta[1] * X_sorted
+plt.plot(X_sorted, y_line_ne, color=&#39;brown&#39;, linestyle=&#39;--&#39;, linewidth=2,
+label=&#39;Normal Equation&#39;)
+
+plt.xlabel(&quot;Average Rooms&quot;)
+plt.ylabel(&quot;House Price&quot;)
+plt.title(&quot;Linear Regression: Gradient Descent vs Normal Equation&quot;)
+plt.legend()
+plt.grid(True)
+plt.show()
