@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv"
 df = pd.read_csv(url)
 
-df.head()
+df.head() 
 
 X = df[['displacement']]
 y = df['mpg']
