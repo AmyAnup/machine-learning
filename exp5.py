@@ -1,5 +1,5 @@
 import numpy as np
-import time
+import time 
 
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
